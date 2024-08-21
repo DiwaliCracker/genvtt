@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTT Generator</title>
+</head>
+<body>
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const imgUrl = urlParams.get('img1');
+        const width = parseInt(urlParams.get('w'), 10);
+        const height = parseInt(urlParams.get('h'), 10);
+        const interval = parseInt(urlParams.get('interval'), 10);
+        const rows = parseInt(urlParams.get('r'), 10);
+        const cols = parseInt(urlParams.get('c'), 10);
+
+        if (imgUrl && width && height && interval && rows && cols) {
+            let vttData = 'WEBVTT\n\n';
+            let currentTime = 0;
+
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const startTime = new Date(currentTime * 1000).toISOString().substr(11, 8) + '.000';
+                    const endTime = new Date((currentTime + interval) * 1000).toISOString().substr(11, 8) + '.000';
+                    const position = `#xywh=${x * width},${y * height},${width},${height}`;
+                    vttData += `${startTime} --> ${endTime}\n${imgUrl}${position}\n\n`;
+                    currentTime += interval;
+                }
+            }
+
+            // Create and download the VTT file
+            const blob = new Blob([vttData], { type: 'text/vtt' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'thumbnails.vtt';
+            a.click();
+        } else {
+            document.body.innerText = 'Missing parameters';
+        }
+    </script>
+</body>
+</html>
